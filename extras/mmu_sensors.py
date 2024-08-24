@@ -132,10 +132,10 @@ class MmuSensors:
         if switch_pin:
             # Automatically create necessary filament_switch_sensors
             name = "mmu_gate"
-            section = "filament_switch_sensor %s_sensor" % name
+            section = "filament_switch_sensor %s" % name
             config.fileconfig.add_section(section)
             config.fileconfig.set(section, "switch_pin", switch_pin)
-            config.fileconfig.set(section, "pause_on_runout", "False")
+            config.fileconfig.set(section, "pause_on_runout", "True")
             config.fileconfig.set(section, "insert_gcode", "__MMU_GATE_INSERT")
             config.fileconfig.set(section, "runout_gcode", "__MMU_GATE_RUNOUT")
             fs = printer.load_object(config, section)
@@ -145,7 +145,7 @@ class MmuSensors:
         if switch_pin:
             # Automatically create necessary filament_switch_sensors
             name = "extruder"
-            section = "filament_switch_sensor %s_sensor" % name
+            section = "filament_switch_sensor %s" % name
             config.fileconfig.add_section(section)
             config.fileconfig.set(section, "switch_pin", switch_pin)
             config.fileconfig.set(section, "pause_on_runout", "False")
@@ -156,7 +156,7 @@ class MmuSensors:
         if switch_pin:
             # Automatically create necessary filament_switch_sensors
             name = "toolhead"
-            section = "filament_switch_sensor %s_sensor" % name
+            section = "filament_switch_sensor %s" % name
             config.fileconfig.add_section(section)
             config.fileconfig.set(section, "switch_pin", switch_pin)
             config.fileconfig.set(section, "pause_on_runout", "False")

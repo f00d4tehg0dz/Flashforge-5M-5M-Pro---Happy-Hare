@@ -4,14 +4,11 @@
 #
 # Copyright (C) 2022  moggieuk#6538 (discord) moggieuk@hotmail.com
 #
-VERSION=2.2 # Important: Keep synced with mmy.py
-
-KLIPPER_HOME="${HOME}/klipper"
-MOONRAKER_HOME="${HOME}/moonraker"
-KLIPPER_CONFIG_HOME="${HOME}/printer_data/config"
-KLIPPER_LOGS_HOME="${HOME}/printer_data/logs"
-OLD_KLIPPER_CONFIG_HOME="${HOME}/klipper_config"
-SENSORS_SECTION="FILAMENT SENSORS"
+KLIPPER_HOME="/root/printer_software/klipper"
+MOONRAKER_HOME="/root/printer_software/moonraker"
+KLIPPER_CONFIG_HOME="/root/printer_data/config"
+KLIPPER_LOGS_HOME="/root/printer_data/logs"
+OLD_KLIPPER_CONFIG_HOME="/root/printer_software/klipper/config"
 LED_SECTION="MMU OPTIONAL NEOPIXEL"
 
 
@@ -267,29 +264,12 @@ cleanup_manual_stepper_version() {
     fi
 }
 
-# Upgrade mmu sensors part of mmu_hardware.cfg
-upgrade_mmu_sensors() {
-    hardware_cfg="${KLIPPER_CONFIG_HOME}/mmu/base/mmu_hardware.cfg"
-    found_mmu_sensors=$(egrep -c "${SENSORS_SECTION}" ${hardware_cfg} || true)
-
-    if [ "${found_mmu_sensors}" -eq 0 ]; then
-        # Form new section ready for insertion at end of existing mmu_hardware.cfg
-        sed -n "/${SENSORS_SECTION}/,+26p" "${SRCDIR}/config/base/mmu_hardware.cfg" | sed -e " \
-                    s/^/#/; \
-                " > "${hardware_cfg}.tmp"
-
-        # Add new mmu sensors config section
-        echo -e "${INFO}Adding new mmu sensors section (commented out) to mmu_hardware.cfg..."
-        cat "${hardware_cfg}.tmp" >> "${hardware_cfg}" && rm "${hardware_cfg}.tmp"
-    fi
-}
-
-# Upgrade led effects part of mmu_hardware.cfg (assumed last part of file)
+# Upgrade led effects part of mmu_hardware.cfg
 upgrade_led_effects() {
     hardware_cfg="${KLIPPER_CONFIG_HOME}/mmu/base/mmu_hardware.cfg"
-    found_led_effects=$(egrep -c "${LED_SECTION}" ${hardware_cfg} || true)
+    found_old_led_effects=$(egrep -c "${LED_SECTION}" ${hardware_cfg} || true)
 
-    if [ "${found_led_effects}" -eq 0 ]; then
+    if [ "${found_old_led_effects}" -eq 0 ]; then
         # Form new section ready for insertion at end of existing mmu_hardware.cfg
         sed -n "/${LED_SECTION}/,\$p" "${SRCDIR}/config/base/mmu_hardware.cfg" | sed -e " \
                     s/^/#/; \
@@ -419,7 +399,6 @@ read_default_config() {
     echo -e "${INFO}Reading default configuration parameters..."
     parse_file "${SRCDIR}/config/base/mmu_parameters.cfg"
     parse_file "${SRCDIR}/config/base/mmu_filametrix.cfg" "variable_"
-    happy_hare_version=${VERSION}
 }
 
 # Pull parameters from previous installation
@@ -810,7 +789,8 @@ restart_moonraker() {
 
 prompt_yn() {
     while true; do
-        read -n1 -p "$@ (y/n)? " yn
+        read -n1 -p "
+$@ (y/n)? " yn
         case "${yn}" in
             Y|y)
                 echo "y" 
@@ -828,7 +808,8 @@ prompt_123() {
     prompt=$1
     max=$2
     while true; do
-        read -p "${prompt} (1-${max})? " -n 1 number
+        read -p "
+${prompt} (1-${max})? " -n 1 number
         if [[ "$number" =~ [1-${max}] ]]; then
             echo ${number}
             break
@@ -1315,9 +1296,9 @@ if [ "${INSTALL}" -eq 1 -a "${UNINSTALL}" -eq 1 ]; then
     usage
 fi
 
-verify_not_root
+#verify_not_root
 verify_home_dirs
-check_klipper
+#check_klipper
 cleanup_old_ercf
 if [ "$UNINSTALL" -eq 0 ]; then
     # Set in memory parameters from default file
@@ -1334,7 +1315,6 @@ if [ "$UNINSTALL" -eq 0 ]; then
     fi
     copy_config_files
     cleanup_manual_stepper_version
-    upgrade_mmu_sensors
     upgrade_led_effects
     link_mmu_plugins
     install_update_manager
